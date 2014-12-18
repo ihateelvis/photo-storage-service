@@ -1,0 +1,12 @@
+{
+	"name": "photo-storage-service",
+	"version": "0.0.0",
+	"description": "Photo storage and access service",
+	"main": "server.js",
+	"repository": "https://github.com/ihateelvis/photo-storage-service.git",
+	"author": "Reginald Miller",
+	"dependencies": {
+		"mongoose": "~3.9.6",
+		"express": "~4.10.6"
+	}
+}
