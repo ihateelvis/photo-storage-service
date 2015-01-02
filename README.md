@@ -4,18 +4,21 @@ photo-storage-service
 This is a work-in-progress service aimed to provide APIs to allow for simple and efficient storage of photos.
 
 After cloning the repo, execute the following commands in the project directory:
-  1. npm install
-  2. npm install -g mongodb
+
+    1. npm install
+    2. npm install -g mongodb
 
 This will install all necessary dependencies, as well as to install mongodb globally. All DB files will be saved by default to /data/db, and the server code provided by this repo will create a db instance named photoTest2 there. For more information, please see the npm/mongodb documentation.
 
 
 To start up the database, in a terminal window type:
-  mongod
+
+    1. mongod
   
 In another terminal window, execute the following command:
-  node server.js <webapp>
-Where <webapp> is the relative path to the homepage of your web application. If you wish to simply try out the provided test page, <webapp> should be "./mockpage/index.html" (without quotations).
+
+    1. node server.js webapp  
+Where 'webapp' is the path to the homepage of your web application. If you wish to simply try out the provided test page, 'webapp' should be "./mockpage/index.html" (without quotations).
 
 To view the page, navigate to localhost:3000 in your favourite browser.
 
