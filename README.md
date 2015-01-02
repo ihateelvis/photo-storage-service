@@ -3,7 +3,14 @@ photo-storage-service
 
 This is a work-in-progress service aimed to provide APIs to allow for simple and efficient storage of photos.
 
-Make sure to go to http://www.mongodb.org/downloads and download and install the latest version of MongoDB.
+Requirements:
+
+    1. Node.js and npm
+    2. MongoDB
+
+In order to install Node.js, follow [the instructions found here](https://github.com/joyent/node/wiki/installation).
+In order to install MongoDB, follow [the instructions found here](http://docs.mongodb.org/manual/tutorial/).
+
 
 After cloning the repo, execute the following commands in the project directory:
 
