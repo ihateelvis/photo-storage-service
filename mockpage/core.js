@@ -2,11 +2,13 @@ var scotchTodo = angular.module('scotchTodo', []);
 
 function mainController($scope, $http) {
     $scope.formData = {};
+    $scope.photo;
 
     $scope.standardGet = function(path) {
         $http.get(path)
             .success(function(data) {
                 console.log(data);
+                $scope.photo = data;
             })
             .error(function(data) {
                 console.log('Error: ' + JSON.stringify(data));
@@ -14,7 +16,7 @@ function mainController($scope, $http) {
     }
 
     $scope.singleGet = function() {
-        $scope.standardGet('/api/users/2/photos/1');
+        $scope.standardGet('/api/users/1/photos/1');
     };
 
     $scope.multiGet = function(type) {
@@ -54,5 +56,7 @@ function mainController($scope, $http) {
                 console.log('Error: ' + JSON.stringify(data));
             });
     }
+
+    $scope.singleGet();
 
 }

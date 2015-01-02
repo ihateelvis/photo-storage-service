@@ -23,12 +23,16 @@
 <body ng-controller="mainController">
     <div class="container">
 
-        <button type="button" name="Test single GET API" ng-click="singleGet()">Single Get Test</button>
+        <img ng-src="data:image/jpeg;base64, {{photo}}">
         <button type="button" name="Test multiple-photo single-user API" ng-click="multiGet('single')">Multi Get (Single User) Test</button>
         <button type="button" name="Test multiple-photo single-user API" ng-click="multiGet('multi')">Multi Get (Multiple User) Test</button>
-        <button type="button" name="Test single POST API" ng-click="singlePost()">Single Post Test</button>
         <button type="button" name="Test single PUT API" ng-click="singlePut()">Single Put Test</button>
         <button type="button" name="Test single DELETE API" ng-click="singleDelete()">Single Delete Test</button>
+        </b> </b>
+        <form id="uploadForm" enctype="multipart/form-data" action="/api/users/1/photos" method="post">
+            <input type="file" name="userPhoto" />
+            <input type="submit" value="Upload Image" ng-click="singlePost()" name="submit">
+        </form>
 
     </div>
 </body>

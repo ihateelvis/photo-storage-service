@@ -1,11 +1,15 @@
+var fs = require('fs');
 var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
+var multer = require('multer');
 
-var db = mongoose.connect('mongodb://127.0.0.1:27017/photoTest1');
+var uploadComplete = false;
+
+var db = mongoose.connect('mongodb://127.0.0.1:27017/photoTest2');
 //attach lister to connected event
 mongoose.connection.once('connected', function() {
 	console.log("Connected to database")
@@ -16,13 +20,23 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({'extended':'true'}));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
+app.use(multer({dest: './testUploads',
+	rename: function(fieldname, filename) {
+		return filename+Date.now();
+	},
+	onFileUploadStart: function(file) {
+		console.log(file.originalname + ' upload is starting...');
+	},
+	onFileUploadComplete: function(file) {
+		console.log(file.fieldname + ' uploaded to ' + file.path);
+		uploadComplete = true;
+	}
+}));
 
 // Creates photo DB object schema
-var photoSchema = new Schema ({
+var photoSchema = new Schema({
 	user_id: Number,
 	loc: String,
-	rel_id: Number,
-	global_id: Number,
 	date: Date,
 	title: String,
 	caption: String
@@ -32,26 +46,33 @@ var Photo = mongoose.model('Photo', photoSchema);
 // Get single photo by id
 app.get('/api/users/:user_id/photos/:photo_id', function(req, res) {
 	if (req.params.user_id == 1 && req.params.photo_id == 1) {
-		res.status(200).json({
+		res.setHeader('Content-type', 'image/jpg');
+		var file = './testUploads/IMAG01571419370672847.jpg';
+		fs.createReadStream(file, {encoding: "base64"}).pipe(res);
+		/*res.status(200).json({
 			'message': 'You have hit the single photo GET API!'
-		});
+		});*/
 	} else {
-		res.status(404).json({
-			'message': 'Please provide a userId and photoId of 1!'
-		});
+		res.sendStatus(400);
 	}
 });
 
 // Get multiple photos for single user
 app.get('/api/users/:user_id/photos', function(req, res) {
 	if (req.params.user_id != 1) {
-		res.status(404).json({
+		res.status(400).json({
 			'message': 'Please provide a userId of 1!'
 		});
 		return;
 	}
 
-	Photo.findOne({'user_id': 1}, function(err, foundPhoto) {
+	Photo.find({'user_id': req.params.user_id}).sort({"updatedAt": 1}).exec(function(err, foundPhotos) {
+		var photoMap = {};
+
+		foundPhotos.forEach(function(photo) {
+			photoMap[photo._id] = photo;
+		});
+
 		res.status(200).json({
 			'message': 'You have hit the single-user multiple-photo GET API!'
 		});
@@ -68,26 +89,28 @@ app.get('/api/photos', function(req, res) {
 // Post a new photo on behalf of a particular user
 app.post('/api/users/:user_id/photos', function(req, res) {
 	if (req.params.user_id != 1) {
-		res.status(404).json({
+		res.status(400).json({
 			'message': 'Please provide a userId of 1!'
 		});
 		return;
 	}
 
-	var photo = new Photo({
-		user_id: req.params.user_id,
-		loc: './mockpage/photos/photo' + req.params.user_id,
-		rel_id: 1,
-		global_id: 1,
-		date: new Date(),
-		title: 'Photo 1',
-		caption: 'This is a test photo'
-	})
-	photo.save();
+	if (uploadComplete == true) {
+		uploadComplete = false;
 
-	res.status(200).json({
-		'message': 'You have created a new photo DB object using the POST API!'
-	});
+		var photo = new Photo({
+			user_id: req.params.user_id,
+			loc: '.testUploads/' + req.files.userPhoto.name,
+			date: new Date(),
+			title: 'Photo 1',
+			caption: 'This is a test photo'
+		})
+		photo.save();
+
+		res.status(200).json({
+			'message': 'You have saved a new photo DB object using the POST API!'
+		});
+	}
 });
 
 // Update information of a particular photo
@@ -106,8 +129,8 @@ app['delete']('/api/users/:user_id/photos/:photo_id', function(req, res) {
 
 // Get home page
 app.get('*', function(req, res) {
-	res.send("./mockpage/index.html");
+	res.send(process.argv[2]);
 });
 
 app.listen(3000);
-console.log("App listening on port 8080");
+console.log("App listening on port 3000");
