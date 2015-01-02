@@ -3,12 +3,14 @@ photo-storage-service
 
 This is a work-in-progress service aimed to provide APIs to allow for simple and efficient storage of photos.
 
+Make sure to go to http://www.mongodb.org/downloads and download and install the latest version of MongoDB.
+
 After cloning the repo, execute the following commands in the project directory:
 
     1. npm install
     2. npm install -g mongodb
 
-This will install all necessary dependencies, as well as to install mongodb globally. All DB files will be saved by default to /data/db, and the server code provided by this repo will create a db instance named photoTest2 there. If you wish to connect to a non-local MongoDB, you will have to edit the appropriate connection line in server.js. For more information, please see the npm and/or mongodb documentation.
+This will install all necessary dependencies, as well as to install the mongodb drivers globally. All DB files will be saved by default to /data/db, and the server code provided by this repo will create a db instance named photoTest2 there. If you wish to connect to a non-local MongoDB, you will have to edit the appropriate connection line in server.js. For more information, please see the npm and/or mongodb documentation.
 Because the APIs and their functionalities are not yet complete, please note that it is highly recommended that a clean npm install is run every time you update your local repo.
 
 
