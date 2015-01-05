@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(multer({dest: './testUploads',
 	rename: function(fieldname, filename) {
-		return filename+Date.now();
+		return filename;
 	},
 	onFileUploadStart: function(file) {
 		console.log(file.originalname + ' upload is starting...');
@@ -98,18 +98,34 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 	if (uploadComplete == true) {
 		uploadComplete = false;
 
-		var photo = new Photo({
-			user_id: req.params.user_id,
-			loc: '.testUploads/' + req.files.userPhoto.name,
-			date: new Date(),
-			title: 'Photo 1',
-			caption: 'This is a test photo'
-		})
-		photo.save();
+		var oldName = req.files.userPhoto.originalname;
+		var oldLocation = __dirname + '/testUploads/' + oldName;
+		var newName = oldName.substring(0, oldName.indexOf('.' + req.files.userPhoto.extension)) + Date.now() + '.' + req.files.userPhoto.extension;
+		var newLocation = __dirname + '/testUploads/' + req.params.user_id + '/' + newName;
 
-		res.status(200).json({
-			'message': 'You have saved a new photo DB object using the POST API!'
-		});
+		fs.rename(oldLocation, newLocation, function(error) {
+				if(error) {
+					res.send({
+						error: 'There was an error saving your file! Please try again!'
+					});
+					//TODO: Add delete of original file in ./testUploads
+					return;
+				}
+
+				var photo = new Photo({
+					user_id: req.params.user_id,
+					loc: newLocation,
+					date: new Date(),
+					title: 'Photo 1',
+					caption: 'This is a test photo'
+				})
+				photo.save();
+
+				res.status(200).json({
+					'message': 'You have saved a new photo DB object using the POST API!'
+				});
+			}.bind(this)
+		);
 	}
 });
 
