@@ -11,6 +11,7 @@ var uploadComplete = false;
 
 var db = mongoose.connect('mongodb://127.0.0.1:27017/photoTest2');
 //attach lister to connected event
+mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 mongoose.connection.once('connected', function() {
 	console.log("Connected to database")
 });
