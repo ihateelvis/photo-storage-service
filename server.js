@@ -145,8 +145,12 @@ app['delete']('/api/users/:user_id/photos/:photo_id', function(req, res) {
 });
 
 // Get home page
+app.get('/app/', function(req, res) {
+	res.sendFile(process.argv[2]+"app/index.html");
+});
+
 app.get('*', function(req, res) {
-	res.send(process.argv[2]);
+	res.sendFile(process.argv[2]+req.params[0]);
 });
 
 app.listen(3000);
