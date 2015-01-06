@@ -28,11 +28,7 @@ function mainController($scope, $http) {
     }
 
     $scope.singlePost = function() {
-        $http.post('/api/users/1/photos', {
-            userPhoto: $scope.userPhoto,
-            photoTitle: $scope.title,
-            photoCaption: $scope.caption
-        })
+        $http.post('/api/users/1/photos', {})
             .success(function(data) {
                 console.log(data);
             })

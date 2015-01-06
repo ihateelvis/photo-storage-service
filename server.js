@@ -49,7 +49,7 @@ app.get('/api/users/:user_id/photos/:photo_id', function(req, res) {
 	if (req.params.user_id == 1) {
 		res.setHeader('Content-type', 'image/jpg');
 		var file;
-		var promise = Photo.find({'user_id': req.params.user_id}).find({_id:mongoose.Types.ObjectId(req.params.photo_id)}).exec(function(err, foundPhotos){
+		var promise = Photo.find({'user_id': req.params.user_id})./*find({_id:mongoose.Types.ObjectId(req.params.photo_id)}).*/exec(function(err, foundPhotos){
 			file = foundPhotos[0].loc;
 			fs.readFile(file, "base64", function(err, data){
 				res.json({
@@ -100,6 +100,11 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 			'message': 'Please provide a userId of 1!'
 		});
 		return;
+	} else if (!req.body || !req.body.photoTitle || !req.body.photoCaption) {
+		res.status(400).json({
+			'message': 'Please provide both a photoTitle and photoCaption in the body!'
+		});
+		return;
 	}
 
 	if (uploadComplete == true) {
@@ -115,7 +120,7 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 					res.send({
 						error: 'There was an error saving your file! Please try again!'
 					});
-					//TODO: Add delete of original file in ./testUploads
+					fs.unlinkSync(oldLocation);
 					return;
 				}
 
@@ -123,13 +128,14 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 					user_id: req.params.user_id,
 					loc: newLocation,
 					date: new Date(),
-					title: 'Photo 1',
-					caption: 'This is a test photo'
+					title: req.body.photoTitle,
+					caption: req.body.photoCaption
 				});
 				photo.save();
 
 				res.status(200).json({
-					'message': 'You have saved a new photo DB object using the POST API!'
+					'message': 'You have saved a new photo DB object using the POST API!',
+					'photo_id': photo._id
 				});
 			}.bind(this)
 		);
@@ -156,7 +162,7 @@ app.get('/app/', function(req, res) {
 });
 
 app.get('*', function(req, res) {
-	res.sendFile(process.argv[2]+req.params[0]);
+	res.sendFile(__dirname + '/' + process.argv[2] + req.params[0]);
 });
 
 app.listen(3000);

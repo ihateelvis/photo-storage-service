@@ -31,7 +31,8 @@
         </b> </b>
         <form id="uploadForm" enctype="multipart/form-data" action="/api/users/1/photos" method="post">
             <input type="file" name="userPhoto" ng-model="userPhoto" />
-            <input type="text" name="title" ng-model="photoTitle" />
+            <input type="text" name="photoTitle" ng-model="photoTitle" />
+            <input type="text" name="photoCaption" ng-model="photoCaption" />
             <button ng-submit="singlePost()" name="submit">Upload Photo</button>
         </form>
 
