@@ -16,7 +16,7 @@ function mainController($scope, $http) {
     }
 
     $scope.singleGet = function() {
-        $scope.standardGet('/api/users/1/photos/1');
+        $scope.standardGet('/api/users/1/photos/54ab2429e618ba8304b0d7f0');
     };
 
     $scope.multiGet = function(type) {

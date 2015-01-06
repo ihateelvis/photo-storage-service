@@ -46,13 +46,19 @@ var Photo = mongoose.model('Photo', photoSchema);
 
 // Get single photo by id
 app.get('/api/users/:user_id/photos/:photo_id', function(req, res) {
-	if (req.params.user_id == 1 && req.params.photo_id == 1) {
+	if (req.params.user_id == 1) {
 		res.setHeader('Content-type', 'image/jpg');
-		var file = './testUploads/IMAG01571419370672847.jpg';
-		fs.createReadStream(file, {encoding: "base64"}).pipe(res);
-		/*res.status(200).json({
-			'message': 'You have hit the single photo GET API!'
-		});*/
+		var file;
+		var promise = Photo.find({'user_id': req.params.user_id}).find({_id:mongoose.Types.ObjectId(req.params.photo_id)}).exec(function(err, foundPhotos){
+			file = foundPhotos[0].loc;
+			fs.readFile(file, "base64", function(err, data){
+				res.json({
+					photo: data,
+					title: foundPhotos[0].title,
+					caption: foundPhotos[0].caption
+				});
+			});
+		});
 	} else {
 		res.sendStatus(400);
 	}
@@ -119,7 +125,7 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 					date: new Date(),
 					title: 'Photo 1',
 					caption: 'This is a test photo'
-				})
+				});
 				photo.save();
 
 				res.status(200).json({
