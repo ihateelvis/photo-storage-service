@@ -49,15 +49,21 @@ app.get('/api/users/:user_id/photos/:photo_id', function(req, res) {
 	if (req.params.user_id == 1) {
 		res.setHeader('Content-type', 'image/jpg');
 		var file;
-		var promise = Photo.find({'user_id': req.params.user_id})./*find({_id:mongoose.Types.ObjectId(req.params.photo_id)}).*/exec(function(err, foundPhotos){
-			file = foundPhotos[0].loc;
-			fs.readFile(file, "base64", function(err, data){
-				res.json({
-					photo: data,
-					title: foundPhotos[0].title,
-					caption: foundPhotos[0].caption
+		var promise = Photo.find({'user_id': req.params.user_id}).find({_id:mongoose.Types.ObjectId(req.params.photo_id)}).exec(function(err, foundPhotos){
+			if (foundPhotos[0]) {
+				file = foundPhotos[0].loc;
+				fs.readFile(file, "base64", function(err, data){
+					res.json({
+						photo: data,
+						title: foundPhotos[0].title,
+						caption: foundPhotos[0].caption
+					});
 				});
-			});
+			} else {
+				res.status(400).json({
+					message: 'Photo not found!'
+				});
+			}
 		});
 	} else {
 		res.sendStatus(400);
