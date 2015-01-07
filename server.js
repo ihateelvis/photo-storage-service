@@ -6,6 +6,8 @@ var Schema = mongoose.Schema;
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+var Q = require('q');
+var path = require('path');
 
 var uploadComplete = false;
 
@@ -80,14 +82,26 @@ app.get('/api/users/:user_id/photos', function(req, res) {
 	}
 
 	Photo.find({'user_id': req.params.user_id}).sort({"updatedAt": 1}).exec(function(err, foundPhotos) {
-		var photoMap = {};
+		var photoArray = [],
+			deferreds = [];
 
-		foundPhotos.forEach(function(photo) {
-			photoMap[photo._id] = photo;
+		foundPhotos.forEach(function(photo, index) {
+			deferreds.push(Q.defer());
+			fs.readFile(photo.loc, "base64", function(err, data) {
+				if(err) {
+					deferreds[index].resolve();
+				} else {
+					photoArray[index] = {
+						photo: data,
+						title: photo.title,
+						caption: photo.caption
+					};
+					deferreds[index].resolve();
+				}
+			});
 		});
-
-		res.status(200).json({
-			'message': 'You have hit the single-user multiple-photo GET API!'
+		Q.spread(deferreds.map(function(deferred){return deferred.promise}), function() {
+			res.json(photoArray);
 		});
 	});
 });
@@ -164,11 +178,11 @@ app['delete']('/api/users/:user_id/photos/:photo_id', function(req, res) {
 
 // Get home page
 app.get('/app/', function(req, res) {
-	res.sendFile(process.argv[2]+"app/index.html");
+	res.sendFile(path.normalize(__dirname + '/' + process.argv[2] + "app/index.html"));
 });
 
 app.get('*', function(req, res) {
-	res.sendFile(__dirname + '/' + process.argv[2] + req.params[0]);
+	res.sendFile(path.normalize(__dirname + '/' + process.argv[2] + req.params[0]));
 });
 
 app.listen(3000);
