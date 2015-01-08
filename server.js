@@ -115,18 +115,6 @@ app.get('/api/photos', function(req, res) {
 
 // Post a new photo on behalf of a particular user
 app.post('/api/users/:user_id/photos', function(req, res) {
-	if (req.params.user_id != 1) {
-		res.status(400).json({
-			'message': 'Please provide a userId of 1!'
-		});
-		return;
-	} else if (!req.body || !req.body.photoTitle || !req.body.photoCaption) {
-		res.status(400).json({
-			'message': 'Please provide both a photoTitle and photoCaption in the body!'
-		});
-		return;
-	}
-
 	if (uploadComplete == true) {
 		uploadComplete = false;
 
@@ -135,30 +123,45 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 		var newName = oldName.substring(0, oldName.indexOf('.' + req.files.userPhoto.extension)) + Date.now() + '.' + req.files.userPhoto.extension;
 		var newLocation = __dirname + '/testUploads/' + req.params.user_id + '/' + newName;
 
-		fs.rename(oldLocation, newLocation, function(error) {
+		if (req.params.user_id != 1) {
+			res.status(400).json({
+				'message': 'Please provide a userId of 1!'
+			});
+		} else if (!req.body || !req.body.photoTitle || !req.body.photoCaption) {
+			res.status(400).json({
+				'message': 'Please provide both a photoTitle and photoCaption in the body!'
+			});
+		} else { 
+			fs.rename(oldLocation, newLocation, function(error) {
 				if(error) {
 					res.send({
 						error: 'There was an error saving your file! Please try again!'
 					});
-					fs.unlinkSync(oldLocation);
-					return;
+				} else {
+					var photo = new Photo({
+						user_id: req.params.user_id,
+						loc: newLocation,
+						date: new Date(),
+						title: req.body.photoTitle,
+						caption: req.body.photoCaption
+					});
+					photo.save();
+
+					res.status(200).json({
+						'message': 'You have saved a new photo DB object using the POST API!',
+						'photo_id': photo._id
+					});
 				}
+			}.bind(this));
+		}
 
-				var photo = new Photo({
-					user_id: req.params.user_id,
-					loc: newLocation,
-					date: new Date(),
-					title: req.body.photoTitle,
-					caption: req.body.photoCaption
-				});
-				photo.save();
-
-				res.status(200).json({
-					'message': 'You have saved a new photo DB object using the POST API!',
-					'photo_id': photo._id
-				});
-			}.bind(this)
-		);
+		fs.exists(oldLocation, function(exists) {
+    	if (exists) {
+        fs.unlink(oldLocation, function(error) {
+        	// Do nothing
+        });
+    	}
+		});
 	}
 });
 
