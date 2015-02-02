@@ -167,18 +167,6 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 				}
 			}.bind(this));
 		}
-
-		// fs.exists(oldLocation, function(exists) {
-	 //    	if (exists) {
-	 //    		fs.exists(newLocation, function(exists) {
-	 //    			if (exists) {
-	 //    				fs.unlink(oldLocation, function(error) {
-	 //    					// Do nothing
-	 //    				});
-	 //    			}
-	 //    		});
-	 //    	}
-		// });
 	}
 });
 
