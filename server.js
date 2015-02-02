@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var Q = require('q');
 var path = require('path');
+var mkdirp = require('mkdirp');
 
 var uploadComplete = false;
 
@@ -15,7 +16,7 @@ var db = mongoose.connect('mongodb://127.0.0.1:27017/photoTest2');
 //attach lister to connected event
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 mongoose.connection.once('connected', function() {
-	console.log("Connected to database")
+	console.log("Connected to database");
 });
 
 app.use(express['static'](__dirname + '/mockpage'));
@@ -121,7 +122,8 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 		var oldName = req.files.userPhoto.originalname;
 		var oldLocation = __dirname + '/testUploads/' + oldName;
 		var newName = oldName.substring(0, oldName.indexOf('.' + req.files.userPhoto.extension)) + Date.now() + '.' + req.files.userPhoto.extension;
-		var newLocation = __dirname + '/testUploads/' + req.params.user_id + '/' + newName;
+		var targetLocation = __dirname + '/testUploads/' + req.params.user_id + '/';
+		var newLocation = targetLocation + newName;
 
 		if (req.params.user_id != 1) {
 			res.status(400).json({
@@ -132,36 +134,51 @@ app.post('/api/users/:user_id/photos', function(req, res) {
 				'message': 'Please provide both a photoTitle and photoCaption in the body!'
 			});
 		} else { 
-			fs.rename(oldLocation, newLocation, function(error) {
+			mkdirp(targetLocation, function(error) {
 				if(error) {
 					res.send({
 						error: 'There was an error saving your file! Please try again!'
 					});
 				} else {
-					var photo = new Photo({
-						user_id: req.params.user_id,
-						loc: newLocation,
-						date: new Date(),
-						title: req.body.photoTitle,
-						caption: req.body.photoCaption
-					});
-					photo.save();
+					fs.rename(oldLocation, newLocation, function(error) {
+						fs.unlink(oldLocation, function(error) {
+	    					// Do nothing
+	    				});
+						if(error) {
+							res.send({
+								error: 'There was an error saving your file! Please try again!'
+							});
+						} else {
+							var photo = new Photo({
+								user_id: req.params.user_id,
+								loc: newLocation,
+								date: new Date(),
+								title: req.body.photoTitle,
+								caption: req.body.photoCaption
+							});
+							photo.save();
 
-					res.status(200).json({
-						'message': 'You have saved a new photo DB object using the POST API!',
-						'photo_id': photo._id
-					});
+							res.status(200).json({
+								'message': 'You have saved a new photo DB object using the POST API!',
+								'photo_id': photo._id
+							});
+						}
+					}.bind(this));
 				}
 			}.bind(this));
 		}
 
-		fs.exists(oldLocation, function(exists) {
-    	if (exists) {
-        fs.unlink(oldLocation, function(error) {
-        	// Do nothing
-        });
-    	}
-		});
+		// fs.exists(oldLocation, function(exists) {
+	 //    	if (exists) {
+	 //    		fs.exists(newLocation, function(exists) {
+	 //    			if (exists) {
+	 //    				fs.unlink(oldLocation, function(error) {
+	 //    					// Do nothing
+	 //    				});
+	 //    			}
+	 //    		});
+	 //    	}
+		// });
 	}
 });
 
